@@ -1,0 +1,274 @@
+{
+  "aivuln.python.flask-debug": {
+    "message": "デバッグ有効の起動設定です。公開環境で使われる設定か確認してください。",
+    "severity": "WARNING"
+  },
+  "aivuln.python.requests-no-verify": {
+    "message": "TLS証明書の検証が無効です。接続先と運用設定を確認してください。",
+    "severity": "WARNING"
+  },
+  "aivuln.python.yaml-unsafe-load": {
+    "message": "安全でないYAMLローダーの使用です。入力元を確認しSafeLoader等を検討してください。",
+    "severity": "WARNING"
+  },
+  "aivuln.javascript.eval": {
+    "message": "動的コード評価の使用です。非信頼入力が到達するか確認してください。",
+    "severity": "WARNING"
+  },
+  "aivuln.javascript.tls-disabled": {
+    "message": "Node.jsのTLS証明書検証を無効にする設定です。実際の実行環境を確認してください。",
+    "severity": "WARNING"
+  },
+  "aivuln.php.eval": {
+    "message": "動的コード評価の使用です。非信頼入力が到達するか確認してください。",
+    "severity": "WARNING"
+  },
+  "jsp-likely-xss": {
+    "message": "Detected a XSS vulnerability $VAR is rendered unsafely in template",
+    "severity": "ERROR"
+  },
+  "potential-symlink-takeover-with-os.executable": {
+    "message": "os.Executable()s behaviour varies between operating systems. On Linux symlinks are followed, while on MacOS and Windows they are not. Depending on context, this could lead to file replacement attacks and local privilege escalation.",
+    "severity": "WARNING"
+  },
+  "sprintf-unescaped-control-characters": {
+    "message": "fmt.Sprintf()'s %s formatting verb does not escape control characters in a string, such as \\u000a or backtick-enclosed multilines. This could lead to various vulnerabilities such as header injection, request smuggling, log injection, etc.",
+    "severity": "WARNING"
+  },
+  "non-atomic-use-of-converted-uintptr": {
+    "message": "An unsafe.Pointer converted to an uintptr must be used in an atomic step. Without this it is not guaranteed that the memory location uintptr points to will contain the intended structure.",
+    "severity": "WARNING"
+  },
+  "jakarta-mail-internetaddress-overloaded-ctor": {
+    "message": "InternetAddress(String, ...) constructors do NOT validate the email address. They assign the address field directly. Prefer the single-arg constructor + explicit validation.",
+    "severity": "WARNING"
+  },
+  "jakarta-mail-internetaddress-single-arg-validator": {
+    "message": "new InternetAddress(String) parses an email for RFC compliance, but should not be treated as a full security/identity check. Ensure domain checks and trust decisions are not based solely on constructor success.",
+    "severity": "INFO"
+  },
+  "jakarta-mail-mimemessage-raw-envelope-ctor": {
+    "message": "MimeMessage constructed from a raw source or InputStream. Headers such as From, Reply-To, Subject, and Newsgroups will be parsed using InternetAddress/NewsAddress. Ensure user-controlled envelopes are canonicalized and not blindly trusted.",
+    "severity": "INFO"
+  },
+  "jakarta-mail-mimemessage-newsgroups-recipients": {
+    "message": "MimeMessage.getRecipients(Message.RecipientType.NEWSGROUPS) used. Newsgroups headers may be concatenated and parsed via NewsAddress, which silently normalizes malformed values. Review how this data is used.",
+    "severity": "INFO"
+  },
+  "spring-internetaddresseditor-usage": {
+    "message": "Spring InternetAddressEditor used. This relies on Jakarta Mail parsing and will decode encoded personal names (RFC 2047). Ensure the resulting personal/name fields are not used as trust signals.",
+    "severity": "INFO"
+  },
+  "spring-simplemailmessage-setfrom-raw": {
+    "message": "SimpleMailMessage.setFrom(...) called. If the from-address is influenced by user input, be aware of encoded names and complex email syntax (e.g. encoded words, group addresses, angle-bracket forms).",
+    "severity": "INFO"
+  },
+  "email-domain-split-index": {
+    "message": "Domain derived via email.split(\"@\")[1]. This is fragile for complex, RFC-compliant addresses (e.g. \"\\\"foo@bar.com\\\"@example.com\"). Prefer a proper email parser and canonicalization for domain checks.",
+    "severity": "WARNING"
+  },
+  "email-domain-lastindexof": {
+    "message": "Domain derived via substring(lastIndexOf(\"@\") + 1). This can be tricked by overloaded or encoded email addresses. Prefer a proper parser and canonical form instead of manual substring logic.",
+    "severity": "WARNING"
+  },
+  "email-domain-endswith": {
+    "message": "Domain/tenant derived using email.endsWith(\"...\"). This can be bypassed with addresses like tester@evil.com@trusted.com. Prefer comparing the canonical domain returned by a parser.",
+    "severity": "WARNING"
+  },
+  "hibernate-email-annotation-field": {
+    "message": "Field annotated with @Email. The default Hibernate validator is not RFC 2047-aware and can accept complex syntax (e.g. \"\\\"foo@bar.com\\\"@example.com\"). Review any domain or trust logic that uses this field (split/substring/endsWith).",
+    "severity": "INFO"
+  },
+  "gcm-static-iv": {
+    "message": "GCM IV and key are both same source $KEY_BYTES",
+    "severity": "WARNING"
+  },
+  "randomstringutils-insecure-rng": {
+    "message": "RandomStringUtils uses java.util.Random by default which is not suitable for security",
+    "severity": "WARNING"
+  },
+  "UnsafeHttpInvokerServiceExporter-func": {
+    "message": "Unsafe Spring Service Exporter func $FUNC",
+    "severity": "INFO"
+  },
+  "UnsafeHttpInvokerServiceExporter-var": {
+    "message": "Unsafe Spring Service Exporter var $VAR",
+    "severity": "INFO"
+  },
+  "UnsafeHttpInvokerServiceExporter-extends": {
+    "message": "Unsafe Spring Service Exporter $CLASS extends RemoteInvocationSerializingExporter",
+    "severity": "INFO"
+  },
+  "UnsafeHttpInvokerServiceExporter-XML": {
+    "message": "Unsafe Spring Service Exporter XML",
+    "severity": "INFO"
+  },
+  "php-filter-chain-read-from-oracle": {
+    "message": "Detected possible file read caused by the the error-based oracle of PHP filter chains. It can be used to leak the content of a local file when passed to vulnerable functions even when the server does not return the file content.",
+    "severity": "ERROR"
+  },
+  "save-state": {
+    "message": "::save-state workflow command is deprecated, use GITHUB_STATE environment file instead.",
+    "severity": "INFO"
+  },
+  "set-output": {
+    "message": "::set-output workflow command is deprecated, use GITHUB_STATE environment file instead.",
+    "severity": "INFO"
+  },
+  "network-policy-ingress-any": {
+    "message": "NetworkPolicy with Ingress Permit ANY",
+    "severity": "WARNING"
+  },
+  "privileged-container": {
+    "message": "Privileged Container $IMAGE",
+    "severity": "WARNING"
+  },
+  "allow-privilege-escalation": {
+    "message": "Container $NAME allows for privilege escalation via setuid or setgid binaries. Add 'allowPrivilegeEscalation: false' in 'securityContext' to prevent this.",
+    "severity": "WARNING"
+  },
+  "no-security-context": {
+    "message": "Container allows for running applications as root. This can result in privilege escalation attacks. Add 'runAsNonRoot: true' in 'securityContext' to prevent this.",
+    "severity": "WARNING"
+  },
+  "run-as-non-root-unsafe-value": {
+    "message": "Container allows for running applications as root. This can result in privilege escalation attacks. Change 'runAsNonRoot:' to 'true' in 'securityContext' to prevent this.",
+    "severity": "WARNING"
+  },
+  "run-as-non-root": {
+    "message": "Container allows for running applications as root. This can result in privilege escalation attacks. Add 'runAsNonRoot: true' in 'securityContext' to prevent this.",
+    "severity": "WARNING"
+  },
+  "aivuln.deep.python.shell-command": {
+    "message": "シェルを経由してコマンドを実行します。非信頼入力の到達と引数分離を確認してください。",
+    "severity": "WARNING"
+  },
+  "aivuln.deep.python.pickle-load": {
+    "message": "pickleの復元は任意コードを実行し得ます。入力の信頼性を確認してください。",
+    "severity": "WARNING"
+  },
+  "aivuln.deep.python.django-mark-safe": {
+    "message": "DjangoのHTMLエスケープを回避します。入力を安全と扱える根拠を確認してください。",
+    "severity": "WARNING"
+  },
+  "aivuln.deep.python.django-csrf-exempt": {
+    "message": "CSRF検査を免除するviewです。認証方式と代替の要求元検証を確認してください。",
+    "severity": "WARNING"
+  },
+  "aivuln.deep.python.sql-concatenation": {
+    "message": "SQL実行時に文字列を連結しています。値をパラメータとして渡せるか確認してください。",
+    "severity": "WARNING"
+  },
+  "aivuln.deep.python.flask-string-template": {
+    "message": "文字列をテンプレートとして評価します。外部入力がテンプレート本体へ入らないか確認してください。",
+    "severity": "WARNING"
+  },
+  "aivuln.deep.python.jwt-signature-disabled": {
+    "message": "JWTの署名検証を無効にしています。認証判断に利用していないか確認してください。",
+    "severity": "WARNING"
+  },
+  "aivuln.deep.javascript.shell-exec": {
+    "message": "シェルコマンドの実行です。外部入力の到達とexecFile等での引数分離を確認してください。",
+    "severity": "WARNING"
+  },
+  "aivuln.deep.javascript.document-write": {
+    "message": "HTMLを直接書き込みます。非信頼入力に対するエスケープを確認してください。",
+    "severity": "WARNING"
+  },
+  "aivuln.deep.javascript.inner-html": {
+    "message": "HTMLを直接代入します。入力の信頼性とHTMLサニタイザを確認してください。",
+    "severity": "WARNING"
+  },
+  "aivuln.deep.javascript.dynamic-function": {
+    "message": "文字列から関数を生成します。外部入力がコードとして評価されないか確認してください。",
+    "severity": "WARNING"
+  },
+  "aivuln.deep.javascript.express-credential-cors": {
+    "message": "任意originと資格情報を同時に許可するCORS設定です。originの許可リストを確認してください。",
+    "severity": "WARNING"
+  },
+  "aivuln.deep.javascript.sql-concatenation": {
+    "message": "SQL queryへ文字列を連結しています。バインド変数を使えるか確認してください。",
+    "severity": "WARNING"
+  },
+  "aivuln.deep.javascript.ejs-string-template": {
+    "message": "文字列をEJSテンプレートとして評価します。テンプレート本体への外部入力を確認してください。",
+    "severity": "WARNING"
+  },
+  "aivuln.deep.go.tls-no-verify": {
+    "message": "GoのTLS検証を無効にしています。接続先の証明書検証を確認してください。",
+    "severity": "WARNING"
+  },
+  "aivuln.deep.go.shell-command": {
+    "message": "シェルを通したコマンド実行です。引数に外部入力が含まれないか確認してください。",
+    "severity": "WARNING"
+  },
+  "aivuln.deep.go.template-html": {
+    "message": "テンプレートのHTMLエスケープを回避します。入力元とサニタイズを確認してください。",
+    "severity": "WARNING"
+  },
+  "aivuln.deep.java.xml-doctype-enabled": {
+    "message": "XMLのDOCTYPE拒否を無効にしています。外部実体やネットワークアクセスの制限を確認してください。",
+    "severity": "WARNING"
+  },
+  "aivuln.deep.java.weak-cipher": {
+    "message": "DESまたはECB暗号方式です。用途に応じた認証付き暗号へ移行できるか確認してください。",
+    "severity": "WARNING"
+  },
+  "aivuln.deep.java.xml-decoder": {
+    "message": "XMLDecoderでオブジェクトを復元します。非信頼入力を受け取らないか確認してください。",
+    "severity": "WARNING"
+  },
+  "aivuln.deep.java.runtime-exec": {
+    "message": "外部プロセスを起動します。コマンドと引数に非信頼入力が到達しないか確認してください。",
+    "severity": "WARNING"
+  },
+  "aivuln.deep.csharp.binary-formatter": {
+    "message": "BinaryFormatterは非信頼データの復元に使用できません。安全なシリアライズ方式を確認してください。",
+    "severity": "WARNING"
+  },
+  "aivuln.deep.csharp.shell-command": {
+    "message": "シェルを介してプロセスを起動します。外部入力の到達と引数の扱いを確認してください。",
+    "severity": "WARNING"
+  },
+  "aivuln.deep.ruby.yaml-load": {
+    "message": "YAMLのオブジェクト復元です。非信頼入力にはsafe_load等を使えるか確認してください。",
+    "severity": "WARNING"
+  },
+  "aivuln.deep.ruby.marshal-load": {
+    "message": "Marshalの復元です。非信頼入力を渡さない設計か確認してください。",
+    "severity": "WARNING"
+  },
+  "aivuln.deep.ruby.eval": {
+    "message": "動的コード評価です。非信頼入力が到達しないか確認してください。",
+    "severity": "WARNING"
+  },
+  "aivuln.deep.ruby.tls-no-verify": {
+    "message": "TLS証明書検証を無効化する定数です。実際の設定先を確認してください。",
+    "severity": "WARNING"
+  },
+  "aivuln.deep.php.unserialize": {
+    "message": "PHPオブジェクトの復元です。入力の信頼性と許可クラスを確認してください。",
+    "severity": "WARNING"
+  },
+  "aivuln.deep.php.shell-exec": {
+    "message": "シェルでコマンドを実行します。外部入力の到達を確認してください。",
+    "severity": "WARNING"
+  },
+  "aivuln.deep.php.sql-concatenation": {
+    "message": "SQLへ文字列を連結しています。プリペアドステートメントへ置き換えられるか確認してください。",
+    "severity": "WARNING"
+  },
+  "aivuln.deep.php.curl-tls-no-verify": {
+    "message": "cURLのTLS証明書検証を無効にしています。接続先の証明書検証を確認してください。",
+    "severity": "WARNING"
+  },
+  "aivuln.deep.python.sql-request-taint": {
+    "message": "Flaskの要求入力がSQL本体へ到達する静的な経路です。SQL本体を固定し、値を別の引数にバインドしてください。実行時の到達性は別途確認が必要です。",
+    "severity": "WARNING"
+  },
+  "aivuln.deep.javascript.sql-request-taint": {
+    "message": "reqまたはrequestの要求入力がSQL本体へ到達する静的な経路です。SQL本体を固定し、値を別の引数にバインドしてください。実行時の到達性は別途確認が必要です。",
+    "severity": "WARNING"
+  }
+}

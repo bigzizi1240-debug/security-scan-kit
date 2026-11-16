@@ -1,0 +1,57 @@
+# Original rules for this workspace. SPDX-License-Identifier: MIT
+rules:
+  - id: aivuln.python.flask-debug
+    languages: [python]
+    severity: WARNING
+    message: デバッグ有効の起動設定です。公開環境で使われる設定か確認してください。
+    pattern: $APP.run(..., debug=True, ...)
+    metadata:
+      category: security
+      technology: [flask]
+      cwe: ["CWE-489"]
+  - id: aivuln.python.requests-no-verify
+    languages: [python]
+    severity: WARNING
+    message: TLS証明書の検証が無効です。接続先と運用設定を確認してください。
+    pattern-either:
+      - pattern: requests.get(..., verify=False, ...)
+      - pattern: requests.post(..., verify=False, ...)
+      - pattern: requests.request(..., verify=False, ...)
+    metadata:
+      category: security
+      cwe: ["CWE-295"]
+  - id: aivuln.python.yaml-unsafe-load
+    languages: [python]
+    severity: WARNING
+    message: 安全でないYAMLローダーの使用です。入力元を確認しSafeLoader等を検討してください。
+    pattern-either:
+      - pattern: yaml.load(..., Loader=yaml.Loader, ...)
+      - pattern: yaml.load(..., Loader=yaml.UnsafeLoader, ...)
+      - pattern: yaml.unsafe_load(...)
+    metadata:
+      category: security
+      cwe: ["CWE-502"]
+  - id: aivuln.javascript.eval
+    languages: [javascript, typescript]
+    severity: WARNING
+    message: 動的コード評価の使用です。非信頼入力が到達するか確認してください。
+    pattern: eval($INPUT)
+    metadata:
+      category: security
+      cwe: ["CWE-95"]
+  - id: aivuln.javascript.tls-disabled
+    languages: [javascript, typescript]
+    severity: WARNING
+    message: Node.jsのTLS証明書検証を無効にする設定です。実際の実行環境を確認してください。
+    pattern: process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"
+    metadata:
+      category: security
+      cwe: ["CWE-295"]
+  - id: aivuln.php.eval
+    languages: [php]
+    severity: WARNING
+    message: 動的コード評価の使用です。非信頼入力が到達するか確認してください。
+    pattern: eval($INPUT);
+    metadata:
+      category: security
+      cwe: ["CWE-95"]

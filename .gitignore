@@ -1,0 +1,14 @@
+# 顧客の検査結果・報告書・Vuls の DB(機密かつ大きい)
+data/
+# 導入したツール(bin/kit install で作り直せる)
+tools/
+__pycache__/
+.ruff_cache/
+# 端末固有の設定・認証情報
+.serena/
+.venv/
+.DS_Store
+.env
+.env.*
+*.pem
+*.key

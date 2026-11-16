@@ -1,0 +1,181 @@
+{
+  "upstream": {
+    "repository": "https://github.com/elttam/semgrep-rules",
+    "commit": "244268562cc92d33f54b8a60a187df5520f91b26",
+    "license": "MIT"
+  },
+  "rule_ids": [
+    "UnsafeHttpInvokerServiceExporter-XML",
+    "UnsafeHttpInvokerServiceExporter-extends",
+    "UnsafeHttpInvokerServiceExporter-func",
+    "UnsafeHttpInvokerServiceExporter-var",
+    "aivuln.deep.csharp.binary-formatter",
+    "aivuln.deep.csharp.shell-command",
+    "aivuln.deep.go.shell-command",
+    "aivuln.deep.go.template-html",
+    "aivuln.deep.go.tls-no-verify",
+    "aivuln.deep.java.runtime-exec",
+    "aivuln.deep.java.weak-cipher",
+    "aivuln.deep.java.xml-decoder",
+    "aivuln.deep.java.xml-doctype-enabled",
+    "aivuln.deep.javascript.document-write",
+    "aivuln.deep.javascript.dynamic-function",
+    "aivuln.deep.javascript.ejs-string-template",
+    "aivuln.deep.javascript.express-credential-cors",
+    "aivuln.deep.javascript.inner-html",
+    "aivuln.deep.javascript.shell-exec",
+    "aivuln.deep.javascript.sql-concatenation",
+    "aivuln.deep.javascript.sql-request-taint",
+    "aivuln.deep.php.curl-tls-no-verify",
+    "aivuln.deep.php.shell-exec",
+    "aivuln.deep.php.sql-concatenation",
+    "aivuln.deep.php.unserialize",
+    "aivuln.deep.python.django-csrf-exempt",
+    "aivuln.deep.python.django-mark-safe",
+    "aivuln.deep.python.flask-string-template",
+    "aivuln.deep.python.jwt-signature-disabled",
+    "aivuln.deep.python.pickle-load",
+    "aivuln.deep.python.shell-command",
+    "aivuln.deep.python.sql-concatenation",
+    "aivuln.deep.python.sql-request-taint",
+    "aivuln.deep.ruby.eval",
+    "aivuln.deep.ruby.marshal-load",
+    "aivuln.deep.ruby.tls-no-verify",
+    "aivuln.deep.ruby.yaml-load",
+    "aivuln.javascript.eval",
+    "aivuln.javascript.tls-disabled",
+    "aivuln.php.eval",
+    "aivuln.python.flask-debug",
+    "aivuln.python.requests-no-verify",
+    "aivuln.python.yaml-unsafe-load",
+    "allow-privilege-escalation",
+    "email-domain-endswith",
+    "email-domain-lastindexof",
+    "email-domain-split-index",
+    "gcm-static-iv",
+    "hibernate-email-annotation-field",
+    "jakarta-mail-internetaddress-overloaded-ctor",
+    "jakarta-mail-internetaddress-single-arg-validator",
+    "jakarta-mail-mimemessage-newsgroups-recipients",
+    "jakarta-mail-mimemessage-raw-envelope-ctor",
+    "jsp-likely-xss",
+    "jsp-scriptlet-param",
+    "network-policy-ingress-any",
+    "no-security-context",
+    "non-atomic-use-of-converted-uintptr",
+    "php-filter-chain-read-from-oracle",
+    "potential-symlink-takeover-with-os.executable",
+    "privileged-container",
+    "randomstringutils-insecure-rng",
+    "run-as-non-root",
+    "run-as-non-root-unsafe-value",
+    "save-state",
+    "set-output",
+    "spring-internetaddresseditor-usage",
+    "spring-simplemailmessage-setfrom-raw",
+    "sprintf-unescaped-control-characters",
+    "template-vars"
+  ],
+  "files": [
+    {
+      "path": "local-web-baseline.yaml",
+      "sha256": "29d3b93bebfb9d31593f1ad95bc51822af3f03b3268e7cef25eea961a873fffd"
+    },
+    {
+      "path": "upstream/elttam/LICENSE",
+      "sha256": "95dd948e1f028656671830bc15534102ade7394fe0fd251c9b6438839a34560f"
+    },
+    {
+      "path": "upstream/elttam/generic/jsp-likely-xss.yaml",
+      "sha256": "d027941712b0a3ccc93b8354b1a8e583fe8544909cb3e19c32f6cf1581d54b1e"
+    },
+    {
+      "path": "upstream/elttam/go/lang/security/audit/executable-symlink.yaml",
+      "sha256": "b77864ec78ee381a4bafd3fb7f1ce2f0f6459ed8068acdbca8c94385cc3e1dfc"
+    },
+    {
+      "path": "upstream/elttam/go/lang/security/audit/sprintf-plain-string.yaml",
+      "sha256": "ee0ebd954c5bf1dc9d6277252d23a984de63cd5d49954062ee98e3d5772a17c5"
+    },
+    {
+      "path": "upstream/elttam/go/lang/security/audit/uintptr-nonatomic.yaml",
+      "sha256": "c5f35d56ef24edb52fda23f3e19019dbf58f1af36bc084d3ba4a267bb4a811ce"
+    },
+    {
+      "path": "upstream/elttam/java/audit/email-validation/jakarta-mail-email-primitives.yml",
+      "sha256": "4f1e6c4952a2eef1489f8e1cd5b61f9576b35c6022bf90943767918a4aa7f444"
+    },
+    {
+      "path": "upstream/elttam/java/lang/security/audit/crypto/gcm-static-iv.yml",
+      "sha256": "0645dd9a51aae960198033a619fc7ed5d4376caf974b86049f7d1b883b2d91f7"
+    },
+    {
+      "path": "upstream/elttam/java/lang/security/audit/crypto/randomstringutils.yml",
+      "sha256": "e4c2e18f5d0b14dbea3d5af3db7cc362f743d76c44b5c05946db6646c963d018"
+    },
+    {
+      "path": "upstream/elttam/java/spring/security/audit/remoting/UnsafeHttpInvokerServiceExporter.yml",
+      "sha256": "b824f5ecc96dcb1264d8e69d416b0c5daed16630fb2f9b816077ad372f585e72"
+    },
+    {
+      "path": "upstream/elttam/java/spring/security/audit/remoting/UnsafeHttpInvokerServiceExporterXml.yml",
+      "sha256": "a510e763036a3eeec2d2916ad5ab872c009094641be963b57fcf968d0e4f81fb"
+    },
+    {
+      "path": "upstream/elttam/php/php-filter-chain-read-from-oracle.yml",
+      "sha256": "b706141d7cbfb088244d82e503f259dfd535bfe6830fe52dc63b9e9fcc65fd30"
+    },
+    {
+      "path": "upstream/elttam/yaml/github-actions/security/save-state.yaml",
+      "sha256": "526585d9289e50c3e0d0e66a1c843f782205e80d39c1c03f30d33c723f2056e3"
+    },
+    {
+      "path": "upstream/elttam/yaml/github-actions/security/set-output.yaml",
+      "sha256": "617b2026477bdf5b3a58ba96eba76188e47fb5725d26e5827ab2eb651d220575"
+    },
+    {
+      "path": "upstream/elttam/yaml/kubernetes/audit/network-policy-ingress-any.yaml",
+      "sha256": "afe0fd67f4b000e008e1f60b7c9d0ed14876259dcf0bdd34fad6fa09fe252231"
+    },
+    {
+      "path": "upstream/elttam/yaml/kubernetes/audit/privileged-container.yaml",
+      "sha256": "0b72dfa20dfa6f13b31a961f3546e4c211d008908a9fef722bd9523b9a102dc3"
+    },
+    {
+      "path": "upstream/elttam/yaml/kubernetes/security/allow-privilege-escalation.yaml",
+      "sha256": "30f21404df516051a89194eaeca9ef4e91d9961d227980cefe7bc7602d396434"
+    },
+    {
+      "path": "upstream/elttam/yaml/kubernetes/security/no-security-context.yaml",
+      "sha256": "052a9f485f0fbbef796740852ef9b54fe16644acf991534295249f3ef202f17d"
+    },
+    {
+      "path": "upstream/elttam/yaml/kubernetes/security/run-as-non-root-unsafe-value.yaml",
+      "sha256": "9973cc46e3edc5049436243e3313c36d254556c88e9f2456ad52ac8f37e93064"
+    },
+    {
+      "path": "upstream/elttam/yaml/kubernetes/security/run-as-non-root.yaml",
+      "sha256": "41220259c8b645b14f4fcb1083f8874e77f23ba24d8d16431266a9df42e29eb6"
+    },
+    {
+      "path": "local-web-deep.yaml",
+      "sha256": "07da08e67bc2766b3f8ac99c7076a15a0bcd0cad794b394158812c9e8a1bfa7f"
+    },
+    {
+      "path": "local-sql-taint.yaml",
+      "sha256": "a8fb7e902b401d9d2c49e6c4bb6d690f065c21fa687ab45b287adcb8ac8e9b4f"
+    }
+  ],
+  "local_modifications": [
+    {
+      "path": "upstream/elttam/java/spring/security/audit/remoting/UnsafeHttpInvokerServiceExporter.yml",
+      "reason": "Add class bodies to two Java inheritance patterns for current Semgrep parser compatibility; no detection intent change."
+    }
+  ],
+  "local_rules": {
+    "license": "MIT",
+    "authorship": "AI Vuln Lab contributors",
+    "audit_only": true,
+    "deep_added_count": 31
+  }
+}

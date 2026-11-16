@@ -1,0 +1,91 @@
+# Original rules. SPDX-License-Identifier: MIT
+# Intraprocedural source-to-sink candidates; no claim of CVE or runtime exploitability.
+rules:
+  - id: aivuln.deep.python.sql-request-taint
+    languages: [python]
+    severity: WARNING
+    message: Flaskの要求入力がSQL本体へ到達する静的な経路です。SQL本体を固定し、値を別の引数にバインドしてください。実行時の到達性は別途確認が必要です。
+    mode: taint
+    pattern-sources:
+      - pattern-either:
+          - pattern: flask.request.args
+          - pattern: flask.request.form
+          - pattern: flask.request.values
+          - pattern: flask.request.json
+          - pattern: flask.request.get_json(...)
+        exact: true
+    pattern-sanitizers:
+      - patterns:
+          - pattern: $CONVERT(...)
+          - metavariable-regex:
+              metavariable: $CONVERT
+              regex: ^(int|float)$
+          - pattern-not: $CONVERT(..., <... $CURSOR.execute(...) ...>, ...)
+          - pattern-not: $CONVERT(..., <... $CURSOR.executemany(...) ...>, ...)
+        exact: false
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: $CURSOR.execute($QUERY, ...)
+              - pattern: $CURSOR.executemany($QUERY, ...)
+          - focus-metavariable: $QUERY
+    metadata: {category: security, technology: [python, flask], cwe: [CWE-89], license: MIT}
+  - id: aivuln.deep.javascript.sql-request-taint
+    languages: [javascript, typescript]
+    severity: WARNING
+    message: reqまたはrequestの要求入力がSQL本体へ到達する静的な経路です。SQL本体を固定し、値を別の引数にバインドしてください。実行時の到達性は別途確認が必要です。
+    mode: taint
+    options:
+      symbolic_propagation: false
+    pattern-sources:
+      - pattern-either:
+          - pattern: req.query
+          - pattern: req.body
+          - pattern: req.params
+          - pattern: request.query
+          - pattern: request.body
+          - pattern: request.params
+        exact: true
+      - patterns:
+          - pattern-either:
+              - pattern: '{..., text: $SQL, ...}'
+              - pattern: '{..., sql: $SQL, ...}'
+              - pattern: $CONFIG.text = $SQL
+              - pattern: $CONFIG.sql = $SQL
+          - focus-metavariable: $SQL
+        requires: __SOURCE__
+        label: SQL_TEXT
+        exact: true
+    pattern-sanitizers:
+      - patterns:
+          - pattern: $CONVERT(...)
+          - metavariable-regex:
+              metavariable: $CONVERT
+              regex: ^(Number|parseInt|parseFloat)$
+          - pattern-not: $CONVERT(..., <... $DATABASE.query(...) ...>, ...)
+          - pattern-not: $CONVERT(..., <... $DATABASE.execute(...) ...>, ...)
+        exact: false
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: $DATABASE.query($QUERY, ...)
+              - pattern: $DATABASE.execute($QUERY, ...)
+          - pattern-not: $DATABASE.query({...}, ...)
+          - pattern-not: $DATABASE.execute({...}, ...)
+          - pattern-not-inside: |
+              $QUERY = {...};
+              ...
+          - focus-metavariable: $QUERY
+      - patterns:
+          - pattern-either:
+              - pattern: '$DATABASE.query({..., text: $QUERY, ...}, ...)'
+              - pattern: '$DATABASE.query({..., sql: $QUERY, ...}, ...)'
+              - pattern: '$DATABASE.execute({..., sql: $QUERY, ...}, ...)'
+          - focus-metavariable: $QUERY
+      - patterns:
+          - pattern-either:
+              - pattern: $DATABASE.query($CONFIG, ...)
+              - pattern: $DATABASE.execute($CONFIG, ...)
+          - focus-metavariable: $CONFIG
+        requires: SQL_TEXT
+    metadata: {category: security, technology: [nodejs, express], cwe: [CWE-89], license: MIT}

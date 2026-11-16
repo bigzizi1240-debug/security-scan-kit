@@ -1,0 +1,60 @@
+# 127.0.0.1:18080 の入口。DefectDojo と、キットの画面(/kit/)を同じ場所で出す。
+# ${KIT_GATEWAY_TOKEN} と ${KIT_WEB_PORT} は、起動時に nginx イメージの envsubst が埋める。
+
+resolver 127.0.0.11 valid=10s ipv6=off;
+
+server {
+    listen 8080;
+    server_name _;
+    absolute_redirect off;  # 転送先を相対にする(コンテナの中のポート 8080 を外に出さない)
+    client_max_body_size 800m;
+    proxy_http_version 1.1;
+    proxy_read_timeout 1800s;
+    proxy_send_timeout 1800s;
+
+    # キットの画面と API。DefectDojo の管理者(superuser)としてログインしている人だけが使える
+    # (画面からホストで検査ツールを動かすので、一般の利用者には開かない)
+    location /kit/ {
+        auth_request /_kit_auth;
+        error_page 401 403 = @kit_login;
+        set $kit_upstream http://host.docker.internal:${KIT_WEB_PORT};
+        proxy_pass $kit_upstream;
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Kit-Gateway "${KIT_GATEWAY_TOKEN}";
+        proxy_set_header Cookie "";
+        proxy_buffering off;
+    }
+
+    # 確認は DefectDojo の API に任せる。system_settings は superuser しか読めない(ほかは 403)
+    location = /_kit_auth {
+        internal;
+        set $dd_auth http://nginx:8080/api/v2/system_settings/;
+        proxy_pass $dd_auth;
+        proxy_pass_request_body off;
+        proxy_set_header Content-Length "";
+        proxy_set_header Host $http_host;
+        proxy_set_header Accept "application/json";
+    }
+
+    location @kit_login {
+        return 302 /login?next=$request_uri;
+    }
+
+    # DefectDojo。左のメニューの「Products」の前に「スキャンと報告書」のまとまりを差し込む
+    # (キットの画面と、大項目 ①〜③ のページ(キットの画面のダッシュボード)。その下の小項目は、そのページの詳細を開く。
+    # 顧客を選ぶ欄は sidebar.js が作る)。
+    # nginx は 1 つの値を 4096 バイトまでしか読めない(超えると入口が起動しない)ので、差し込む HTML を変数に分けてつなぐ
+    location / {
+        set $dd_upstream http://nginx:8080;
+        set $kit_menu_head '<div x-data="{ open: true }"><a href="#" x-on:click.prevent="open = !open" class="flex items-center gap-3 px-4 py-2 transition-colors cursor-pointer"><i class="fa-solid fa-shield-halved w-5 text-center flex-shrink-0"></i><span class="flex-1 truncate">スキャンと報告書</span><i class="fa-solid fa-chevron-down text-xs"></i></a><div x-show="open" class="overflow-hidden"><a href="/kit/" class="block py-1.5 ps-12 pe-4 text-sm">検査・報告書</a><div id="kit-client" hidden class="ps-12 pe-4 py-1"></div>';
+        set $kit_menu_tier1 '<a href="/kit/#dashboard/1" class="block py-1.5 ps-12 pe-4 text-sm">① 外部攻撃系統</a><a href="/kit/#dashboard/1/fix" class="block py-1 ps-12 pe-4" style="padding-inline-start:4rem;font-size:0.75rem">直す</a><a href="/kit/#dashboard/1/decide" class="block py-1 ps-12 pe-4" style="padding-inline-start:4rem;font-size:0.75rem">システムごとに決める</a><a href="/kit/#dashboard/1/accept" class="block py-1 ps-12 pe-4" style="padding-inline-start:4rem;font-size:0.75rem">リスク受容</a>';
+        set $kit_menu_tier2 '<a href="/kit/#dashboard/2" class="block py-1.5 ps-12 pe-4 text-sm">② 横展開系統</a><a href="/kit/#dashboard/2/fix" class="block py-1 ps-12 pe-4" style="padding-inline-start:4rem;font-size:0.75rem">直す</a><a href="/kit/#dashboard/2/decide" class="block py-1 ps-12 pe-4" style="padding-inline-start:4rem;font-size:0.75rem">システムごとに決める</a><a href="/kit/#dashboard/2/accept" class="block py-1 ps-12 pe-4" style="padding-inline-start:4rem;font-size:0.75rem">リスク受容</a>';
+        set $kit_menu_tier3 '<a href="/kit/#dashboard/3" class="block py-1.5 ps-12 pe-4 text-sm">③ 低可能性</a><a href="/kit/#dashboard/3/fix" class="block py-1 ps-12 pe-4" style="padding-inline-start:4rem;font-size:0.75rem">直す</a><a href="/kit/#dashboard/3/decide" class="block py-1 ps-12 pe-4" style="padding-inline-start:4rem;font-size:0.75rem">システムごとに決める</a><a href="/kit/#dashboard/3/accept" class="block py-1 ps-12 pe-4" style="padding-inline-start:4rem;font-size:0.75rem">リスク受容</a></div><script src="/kit/static/sidebar.js" defer></script></div><!-- Products -->';
+        proxy_pass $dd_upstream;
+        proxy_set_header Host $http_host;
+        proxy_set_header Accept-Encoding "";
+        sub_filter_types text/html;
+        sub_filter_once on;
+        sub_filter '<!-- Products -->' '$kit_menu_head$kit_menu_tier1$kit_menu_tier2$kit_menu_tier3';
+    }
+}

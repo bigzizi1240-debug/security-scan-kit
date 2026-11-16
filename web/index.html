@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>スキャンと報告書</title>
+<link rel="icon" type="image/svg+xml" href="/static/dojo/img/favicon.svg">
+<link rel="stylesheet" href="/kit/static/app.css">
+<script src="/kit/static/app.js" defer></script>
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <a href="/dashboard">DefectDojo</a><span class="sep">/</span><strong>スキャンと報告書</strong>
+  </div>
+  <nav class="tabs">
+    <button type="button" data-tab="scan">検査する</button>
+    <button type="button" data-tab="jobs">実行状況<span id="running-badge" class="badge" hidden></span></button>
+    <button type="button" data-tab="repository-results">リポジトリ結果</button>
+    <button type="button" data-tab="reports">報告書</button>
+    <button type="button" data-tab="dashboard">ダッシュボード</button>
+    <button type="button" data-tab="systems">分類の設定</button>
+  </nav>
+</header>
+
+<main>
+  <section id="tab-scan" class="tab">
+    <h2>検査を選んで始める</h2>
+    <form id="scan-form" class="panel">
+      <label>検査の種類
+        <select name="tool" id="tool">
+          <option value="repository">リポジトリをまとめて検査</option>
+          <option value="all">すべて(一括): 顧客のプリセットを順にすべて検査する</option>
+          <option value="trivy">Trivy(ソースコード・コンテナイメージ)</option>
+          <option value="vuls">Vuls(サーバー)</option>
+          <option value="prowler">Prowler(クラウド・GitHub・IaC)</option>
+          <option value="ai">AI で再現性を確かめる(依存の脆弱性。Claude Code)</option>
+          <option value="triage">仕分けし直す(EPSS・CISA KEV を最新にして、直すか受け入れるかで仕分ける)</option>
+          <option value="accept">リスク受容を登録する(仕分けが「リスク受容」の指摘を DefectDojo に登録)</option>
+        </select>
+      </label>
+
+      <div class="tool-fields" data-tool="repository">
+        <p class="hint">依存ライブラリ・コード・秘密情報・設定を同じ版のコードで検査し、部品の一覧（SBOM）を保存します。</p>
+        <label>リポジトリ
+          <span class="with-button">
+            <input name="repository_target" placeholder="Git cloneのフォルダ、または https://github.com/org/repo">
+            <button type="button" data-pick="folder" data-for="repository_target">フォルダを選ぶ</button>
+          </span>
+          <small>複数のGit cloneを並べたフォルダも指定できます。</small>
+        </label>
+        <label>ブランチ（空欄ならoriginの既定のブランチ）<input name="repository_branch"></label>
+        <p class="hint">これはコードの静的検査です。Webの動作や悪用成立を確認した結果とは区別して表示します。</p>
+      </div>
+
+      <div class="tool-fields" data-tool="all" hidden>
+        <label>顧客
+          <select name="bulk_client" id="bulk-client"></select>
+        </label>
+        <p class="hint">次のプリセットを、上から順に検査します。準備が足りないものは飛ばします。</p>
+        <ul id="bulk-preview" class="preview"></ul>
+      </div>
+
+      <div class="tool-fields" data-tool="trivy" hidden>
+        <label>種類
+          <select name="kind" id="trivy-kind">
+            <option value="git">Git の clone(origin の既定のブランチの最新。複数の clone を並べたフォルダも可)</option>
+            <option value="fs">フォルダ(今のファイルのまま)</option>
+            <option value="image">コンテナイメージ</option>
+            <option value="repo">リポジトリの URL</option>
+          </select>
+        </label>
+        <label>対象
+          <span class="with-button">
+            <input name="target" placeholder="/Users/... ・ nginx:1.27 ・ https://github.com/org/repo">
+            <button type="button" data-pick="folder" data-for="target">フォルダを選ぶ</button>
+          </span>
+        </label>
+        <label class="git-only">ブランチ(空欄なら origin の既定のブランチ)<input name="branch"></label>
+      </div>
+
+      <div class="tool-fields" data-tool="vuls" hidden>
+        <label>設定ファイル(見本は vuls/config.example.toml)
+          <span class="with-button">
+            <input name="config" placeholder="/Users/.../vuls-config.toml">
+            <button type="button" data-pick="file" data-for="config">ファイルを選ぶ</button>
+          </span>
+        </label>
+      </div>
+
+      <div class="tool-fields" data-tool="prowler" hidden>
+        <label>対象
+          <select name="provider" id="provider">
+            <option value="aws">AWS</option>
+            <option value="gcp">Google Cloud</option>
+            <option value="azure">Azure</option>
+            <option value="github">GitHub の組織</option>
+            <option value="kubernetes">Kubernetes</option>
+            <option value="m365">Microsoft 365</option>
+            <option value="iac">IaC(Terraform など)</option>
+          </select>
+        </label>
+        <label>Prowler の引数<input name="args" id="prowler-args"><small id="prowler-hint" class="hint"></small></label>
+        <label>検査の名前(報告書に出る)<input name="label"></label>
+      </div>
+
+      <div class="tool-fields" data-tool="ai" hidden>
+        <div class="grid3">
+          <label>顧客
+            <select name="ai_client" id="ai-client"></select>
+          </label>
+          <label>範囲
+            <select name="ai_scope">
+              <option value="critical">① の緊急</option>
+              <option value="high">① の緊急・高</option>
+              <option value="all">依存の脆弱性すべて</option>
+            </select>
+          </label>
+        </div>
+        <p class="hint">検査したときと同じ版のソースを一時フォルダに書き出し(秘密情報らしき行と .env の値は伏せる)、
+          Claude Code(副業の設定)に読み取りだけで読ませて、脆弱性が本番で再現するかを「影響あり・影響なし・要確認」で判定します。
+          判定は DefectDojo のタグとメモに残し、根拠を示せた「影響なし」は誤検知にします。まだ判定のない指摘だけを確かめます。</p>
+      </div>
+
+      <div class="tool-fields" data-tool="triage" hidden>
+        <label>顧客
+          <select name="triage_client" id="triage-client"></select>
+        </label>
+        <p class="hint">EPSS(悪用の見込み)と CISA KEV(悪用が確認された脆弱性)の一覧を取り直し、有効な指摘を
+          「直す・システムごとに決める・リスク受容」に仕分けて、DefectDojo のタグを付け直します(③ 低可能性はすべてリスク受容)。
+          取り込みのたびにも自動で仕分けます。人が DefectDojo で変えた仕分けは上書きしません(仕分けのタグを外すと、自動に戻ります)。</p>
+      </div>
+
+      <div class="tool-fields" data-tool="accept" hidden>
+        <div class="grid3">
+          <label>顧客<select name="accept_client" id="accept-client"></select></label>
+          <label>対象システム<select name="accept_product" id="accept-product"></select></label>
+          <label>受け入れた人<input name="accept_by" id="accept-by" placeholder="例: 顧客の責任者の名前"></label>
+        </div>
+        <div class="grid3">
+          <label>大項目
+            <select name="accept_tier" id="accept-tier">
+              <option value="">すべて</option>
+              <option value="1">① 外部攻撃系統</option>
+              <option value="2">② 横展開系統</option>
+              <option value="3">③ 低可能性</option>
+            </select>
+          </label>
+          <label>期限
+            <select name="accept_days">
+              <option value="90">90 日</option>
+              <option value="180" selected>180 日</option>
+              <option value="365">365 日</option>
+            </select>
+          </label>
+          <label class="check"><input type="checkbox" name="accept_reactivate" checked> 期限が来たら、指摘を有効に戻す</label>
+        </div>
+        <ul id="accept-preview" class="preview"></ul>
+        <p class="hint">仕分けが「リスク受容」の有効な指摘を、DefectDojo のリスク受容として登録します。DefectDojo の決まりで、
+          案件 × 理由のまとまりごとに 1 つ作ります。受け入れた指摘は有効な一覧と報告書から外れ、期限が来ると有効に戻ります。
+          取り消しは DefectDojo の案件の画面(リスク受容)で行えます。</p>
+      </div>
+
+      <div class="grid3 common-fields" hidden>
+        <label>顧客<input name="client" list="clients"></label>
+        <label>対象システム(空欄なら顧客名。Git はリポジトリ名)<input name="product"></label>
+        <label>案件<input name="engagement" id="engagement"></label>
+      </div>
+      <datalist id="clients"></datalist>
+      <div class="actions"><button type="submit" class="primary">検査を始める</button></div>
+      <p id="scan-message" class="message" role="status"></p>
+    </form>
+    <h2>プリセット</h2>
+    <p class="hint">よく使う対象を、ボタン 1 つで検査します。増やすときは data/targets.toml に書きます。</p>
+    <div id="presets" class="cards"></div>
+  </section>
+
+  <section id="tab-jobs" class="tab" hidden>
+    <h2>実行状況と履歴</h2>
+    <table class="list">
+      <thead><tr><th>開始</th><th>内容</th><th>顧客</th><th>状態</th><th>時間</th><th>結果</th><th></th></tr></thead>
+      <tbody id="jobs"></tbody>
+    </table>
+    <div id="log-panel" class="panel" hidden>
+      <div class="log-head"><strong id="log-title"></strong><button type="button" id="log-close">閉じる</button></div>
+      <pre id="log"></pre>
+    </div>
+  </section>
+
+  <section id="tab-repository-results" class="tab" hidden>
+    <h2>リポジトリの検査結果</h2>
+    <p class="hint">依存ライブラリ・コード・秘密情報・設定の検出候補をまとめて確認できます。指摘の件数と、各検査が完了したかを分けて表示します。</p>
+    <div class="filters">
+      <label class="inline">顧客<select id="repository-client"><option value="">すべての顧客</option></select></label>
+      <button type="button" id="repository-refresh">一覧を更新</button>
+    </div>
+    <p id="repository-message" class="message" role="status"></p>
+    <div class="scroll-x">
+      <table class="list repository-list">
+        <thead><tr><th>開始</th><th>顧客 / リポジトリ</th><th>検査した版</th><th>状態と件数</th><th></th></tr></thead>
+        <tbody id="repository-scans"></tbody>
+      </table>
+    </div>
+    <div id="repository-detail" hidden>
+      <div id="repository-summary"></div>
+      <div class="repository-filters">
+        <label>重大度<select id="repository-severity">
+          <option value="">すべて</option><option value="Critical">緊急</option><option value="High">高</option>
+          <option value="Medium">中</option><option value="Low">低</option><option value="Info">情報</option>
+        </select></label>
+        <label>種類<select id="repository-category">
+          <option value="">すべて</option><option value="dependency">依存ライブラリ</option><option value="code">コード</option>
+          <option value="secret">秘密情報</option><option value="config">設定</option>
+        </select></label>
+        <label>検索<input id="repository-query" type="search" placeholder="部品名・脆弱性ID・ファイル・説明"></label>
+      </div>
+      <p id="repository-findings-count" class="hint" role="status"></p>
+      <div id="repository-findings" class="repository-findings"></div>
+      <button type="button" id="repository-more" hidden>さらに100件表示</button>
+    </div>
+  </section>
+
+  <section id="tab-reports" class="tab" hidden>
+    <h2>報告書を作る</h2>
+    <form id="report-form" class="panel grid5">
+      <label>顧客<select name="client" id="report-client" required></select></label>
+      <label>大項目
+        <select name="tier">
+          <option value="">すべて</option>
+          <option value="1">① 外部攻撃系統</option>
+          <option value="2">② 横展開系統</option>
+          <option value="3">③ 低可能性</option>
+        </select>
+      </label>
+      <label>小項目
+        <select name="triage">
+          <option value="">すべて</option>
+          <option value="fix">直す</option>
+          <option value="decide">システムごとに決める</option>
+          <option value="accept">リスク受容</option>
+        </select>
+      </label>
+      <label>案件(空欄ならすべて)<input name="engagement"></label>
+      <div class="actions"><button type="submit" class="primary">作る</button></div>
+    </form>
+    <p id="report-message" class="message" role="status"></p>
+    <h2>作った報告書</h2>
+    <table class="list">
+      <thead><tr><th>作成日時</th><th>顧客</th><th>載せた指摘(大項目 › 小項目)</th><th>報告書</th></tr></thead>
+      <tbody id="reports"></tbody>
+    </table>
+  </section>
+
+  <section id="tab-dashboard" class="tab" hidden>
+    <div class="filters">
+      <div class="chips" id="tier-chips" aria-label="大項目">
+        <button type="button" data-tier="1">① 外部攻撃系統</button>
+        <button type="button" data-tier="2">② 横展開系統</button>
+        <button type="button" data-tier="3">③ 低可能性</button>
+      </div>
+      <label class="inline">顧客<select id="dash-client"></select></label>
+    </div>
+    <div id="dashboard" class="dashboard"><p class="hint">集計しています…</p></div>
+  </section>
+
+  <section id="tab-systems" class="tab" hidden>
+    <h2>分類の設定(システムの公開範囲)</h2>
+    <div class="panel hint-panel">
+      <p>指摘を、攻撃者からの届き方で 3 つに分けます。機械のルールによる推定で、実際に悪用できるかまでは確かめていません。</p>
+      <ul>
+        <li><strong>① 外部攻撃系統</strong>: 外部の攻撃者の入力が、そのまま届く可能性がある(外部に公開しているシステムの、ネットワーク越しに悪用できる依存。外部への公開に関わる設定。誰でも読める場所の秘密情報)</li>
+        <li><strong>② 横展開系統</strong>: フィッシングなどで中に入った攻撃者や、盗まれたアカウントが悪用できる(内部だけ・ログインが要るシステムの依存。権限・アカウント・変更の管理の設定。非公開リポジトリの秘密情報)</li>
+        <li><strong>③ 低可能性</strong>: ①②の経路が見当たらない(テスト・文書・配備していない場所。物理的な接触が要る。堅牢化の推奨。公開してよい種類の鍵)</li>
+      </ul>
+      <p>判断の要は、システムごとの公開範囲です。「未設定」は外部に公開とみなし、「分類を要確認」を付けます。パスの例外は 1 行に「パス=公開範囲」で書きます(例: <code>backend/lambda/ai_report/=internal  # SQS から呼ばれる</code>)。公開範囲は external・external-auth・internal・none・unknown です。</p>
+    </div>
+    <div id="systems"></div>
+  </section>
+</main>
+</body>
+</html>

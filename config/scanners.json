@@ -1,0 +1,8 @@
+{
+  "semgrep": {
+    "image": "semgrep/semgrep@sha256:93963d9295a366f59e4850127b1550400ee7b388f04fe144e4a1f6325d96e01b",
+    "version": "1.179.0",
+    "manifest_sha256": "20582a1f37a7e707810875e5d5370cdff9d09481d4a79c7f08b6e2587fe4142c",
+    "catalog_sha256": "25487d62a3a228957fa65827adc520c0c4513cb94aaac00bce32dfb302a0f9a6"
+  }
+}

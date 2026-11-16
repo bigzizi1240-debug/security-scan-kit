@@ -1,0 +1,209 @@
+# Original audit rules. SPDX-License-Identifier: MIT
+# Every match is a review candidate, not proof of exploitable data flow.
+rules:
+  - id: aivuln.deep.python.shell-command
+    languages: [python]
+    severity: WARNING
+    message: シェルを経由してコマンドを実行します。非信頼入力の到達と引数分離を確認してください。
+    pattern-either:
+      - pattern: subprocess.run(..., shell=True, ...)
+      - pattern: subprocess.call(..., shell=True, ...)
+      - pattern: subprocess.Popen(..., shell=True, ...)
+      - pattern: subprocess.check_output(..., shell=True, ...)
+    metadata: {category: security, technology: [python], cwe: [CWE-78], license: MIT}
+  - id: aivuln.deep.python.pickle-load
+    languages: [python]
+    severity: WARNING
+    message: pickleの復元は任意コードを実行し得ます。入力の信頼性を確認してください。
+    pattern-either:
+      - pattern: pickle.loads(...)
+      - pattern: pickle.load(...)
+    metadata: {category: security, technology: [python], cwe: [CWE-502], license: MIT}
+  - id: aivuln.deep.python.django-mark-safe
+    languages: [python]
+    severity: WARNING
+    message: DjangoのHTMLエスケープを回避します。入力を安全と扱える根拠を確認してください。
+    pattern: django.utils.safestring.mark_safe($VALUE)
+    metadata: {category: security, technology: [django], cwe: [CWE-79], license: MIT}
+  - id: aivuln.deep.python.django-csrf-exempt
+    languages: [python]
+    severity: WARNING
+    message: CSRF検査を免除するviewです。認証方式と代替の要求元検証を確認してください。
+    pattern: |
+      @django.views.decorators.csrf.csrf_exempt
+      def $VIEW(...):
+        ...
+    metadata: {category: security, technology: [django], cwe: [CWE-352], license: MIT}
+  - id: aivuln.deep.python.sql-concatenation
+    languages: [python]
+    severity: WARNING
+    message: SQL実行時に文字列を連結しています。値をパラメータとして渡せるか確認してください。
+    pattern: $CURSOR.execute($SQL + $VALUE, ...)
+    metadata: {category: security, technology: [python], cwe: [CWE-89], license: MIT}
+  - id: aivuln.deep.python.flask-string-template
+    languages: [python]
+    severity: WARNING
+    message: 文字列をテンプレートとして評価します。外部入力がテンプレート本体へ入らないか確認してください。
+    pattern: flask.render_template_string($TEMPLATE, ...)
+    metadata: {category: security, technology: [flask], cwe: [CWE-1336], license: MIT}
+  - id: aivuln.deep.python.jwt-signature-disabled
+    languages: [python]
+    severity: WARNING
+    message: JWTの署名検証を無効にしています。認証判断に利用していないか確認してください。
+    pattern: 'jwt.decode(..., options={..., "verify_signature": False, ...}, ...)'
+    metadata: {category: security, technology: [pyjwt], cwe: [CWE-347], license: MIT}
+  - id: aivuln.deep.javascript.shell-exec
+    languages: [javascript, typescript]
+    severity: WARNING
+    message: シェルコマンドの実行です。外部入力の到達とexecFile等での引数分離を確認してください。
+    pattern-either:
+      - pattern: child_process.exec($COMMAND, ...)
+      - pattern: child_process.execSync($COMMAND, ...)
+    metadata: {category: security, technology: [nodejs], cwe: [CWE-78], license: MIT}
+  - id: aivuln.deep.javascript.document-write
+    languages: [javascript, typescript]
+    severity: WARNING
+    message: HTMLを直接書き込みます。非信頼入力に対するエスケープを確認してください。
+    pattern: document.write(...)
+    metadata: {category: security, technology: [browser], cwe: [CWE-79], license: MIT}
+  - id: aivuln.deep.javascript.inner-html
+    languages: [javascript, typescript]
+    severity: WARNING
+    message: HTMLを直接代入します。入力の信頼性とHTMLサニタイザを確認してください。
+    pattern: $ELEMENT.innerHTML = $HTML
+    metadata: {category: security, technology: [browser], cwe: [CWE-79], license: MIT}
+  - id: aivuln.deep.javascript.dynamic-function
+    languages: [javascript, typescript]
+    severity: WARNING
+    message: 文字列から関数を生成します。外部入力がコードとして評価されないか確認してください。
+    pattern: new Function(...)
+    metadata: {category: security, technology: [javascript], cwe: [CWE-95], license: MIT}
+  - id: aivuln.deep.javascript.express-credential-cors
+    languages: [javascript, typescript]
+    severity: WARNING
+    message: 任意originと資格情報を同時に許可するCORS設定です。originの許可リストを確認してください。
+    pattern: 'cors({..., origin: true, ..., credentials: true, ...})'
+    metadata: {category: security, technology: [express], cwe: [CWE-942], license: MIT}
+  - id: aivuln.deep.javascript.sql-concatenation
+    languages: [javascript, typescript]
+    severity: WARNING
+    message: SQL queryへ文字列を連結しています。バインド変数を使えるか確認してください。
+    pattern: $DATABASE.query($SQL + $VALUE, ...)
+    metadata: {category: security, technology: [nodejs], cwe: [CWE-89], license: MIT}
+  - id: aivuln.deep.javascript.ejs-string-template
+    languages: [javascript, typescript]
+    severity: WARNING
+    message: 文字列をEJSテンプレートとして評価します。テンプレート本体への外部入力を確認してください。
+    pattern: ejs.render($TEMPLATE, ...)
+    metadata: {category: security, technology: [ejs], cwe: [CWE-1336], license: MIT}
+  - id: aivuln.deep.go.tls-no-verify
+    languages: [go]
+    severity: WARNING
+    message: GoのTLS検証を無効にしています。接続先の証明書検証を確認してください。
+    pattern: 'tls.Config{..., InsecureSkipVerify: true, ...}'
+    metadata: {category: security, technology: [go], cwe: [CWE-295], license: MIT}
+  - id: aivuln.deep.go.shell-command
+    languages: [go]
+    severity: WARNING
+    message: シェルを通したコマンド実行です。引数に外部入力が含まれないか確認してください。
+    pattern-either:
+      - pattern: exec.Command("sh", "-c", ...)
+      - pattern: exec.Command("bash", "-c", ...)
+      - pattern: exec.Command("cmd", "/C", ...)
+    metadata: {category: security, technology: [go], cwe: [CWE-78], license: MIT}
+  - id: aivuln.deep.go.template-html
+    languages: [go]
+    severity: WARNING
+    message: テンプレートのHTMLエスケープを回避します。入力元とサニタイズを確認してください。
+    pattern: template.HTML($VALUE)
+    metadata: {category: security, technology: [go], cwe: [CWE-79], license: MIT}
+  - id: aivuln.deep.java.xml-doctype-enabled
+    languages: [java]
+    severity: WARNING
+    message: XMLのDOCTYPE拒否を無効にしています。外部実体やネットワークアクセスの制限を確認してください。
+    pattern: $FACTORY.setFeature("http://apache.org/xml/features/disallow-doctype-decl", false)
+    metadata: {category: security, technology: [java], cwe: [CWE-611], license: MIT}
+  - id: aivuln.deep.java.weak-cipher
+    languages: [java]
+    severity: WARNING
+    message: DESまたはECB暗号方式です。用途に応じた認証付き暗号へ移行できるか確認してください。
+    pattern-either:
+      - pattern: javax.crypto.Cipher.getInstance("DES")
+      - pattern: javax.crypto.Cipher.getInstance("DES/ECB/PKCS5Padding")
+      - pattern: javax.crypto.Cipher.getInstance("AES/ECB/PKCS5Padding")
+    metadata: {category: security, technology: [java], cwe: [CWE-327], license: MIT}
+  - id: aivuln.deep.java.xml-decoder
+    languages: [java]
+    severity: WARNING
+    message: XMLDecoderでオブジェクトを復元します。非信頼入力を受け取らないか確認してください。
+    pattern: new java.beans.XMLDecoder(...)
+    metadata: {category: security, technology: [java], cwe: [CWE-502], license: MIT}
+  - id: aivuln.deep.java.runtime-exec
+    languages: [java]
+    severity: WARNING
+    message: 外部プロセスを起動します。コマンドと引数に非信頼入力が到達しないか確認してください。
+    pattern: Runtime.getRuntime().exec(...)
+    metadata: {category: security, technology: [java], cwe: [CWE-78], license: MIT}
+  - id: aivuln.deep.csharp.binary-formatter
+    languages: [csharp]
+    severity: WARNING
+    message: BinaryFormatterは非信頼データの復元に使用できません。安全なシリアライズ方式を確認してください。
+    pattern: new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter(...)
+    metadata: {category: security, technology: [dotnet], cwe: [CWE-502], license: MIT}
+  - id: aivuln.deep.csharp.shell-command
+    languages: [csharp]
+    severity: WARNING
+    message: シェルを介してプロセスを起動します。外部入力の到達と引数の扱いを確認してください。
+    pattern-either:
+      - pattern: System.Diagnostics.Process.Start("cmd.exe", ...)
+      - pattern: System.Diagnostics.Process.Start("/bin/sh", ...)
+      - pattern: System.Diagnostics.Process.Start("powershell.exe", ...)
+    metadata: {category: security, technology: [dotnet], cwe: [CWE-78], license: MIT}
+  - id: aivuln.deep.ruby.yaml-load
+    languages: [ruby]
+    severity: WARNING
+    message: YAMLのオブジェクト復元です。非信頼入力にはsafe_load等を使えるか確認してください。
+    pattern: YAML.load(...)
+    metadata: {category: security, technology: [ruby], cwe: [CWE-502], license: MIT}
+  - id: aivuln.deep.ruby.marshal-load
+    languages: [ruby]
+    severity: WARNING
+    message: Marshalの復元です。非信頼入力を渡さない設計か確認してください。
+    pattern: Marshal.load(...)
+    metadata: {category: security, technology: [ruby], cwe: [CWE-502], license: MIT}
+  - id: aivuln.deep.ruby.eval
+    languages: [ruby]
+    severity: WARNING
+    message: 動的コード評価です。非信頼入力が到達しないか確認してください。
+    pattern: eval(...)
+    metadata: {category: security, technology: [ruby], cwe: [CWE-95], license: MIT}
+  - id: aivuln.deep.ruby.tls-no-verify
+    languages: [ruby]
+    severity: WARNING
+    message: TLS証明書検証を無効化する定数です。実際の設定先を確認してください。
+    pattern: OpenSSL::SSL::VERIFY_NONE
+    metadata: {category: security, technology: [ruby], cwe: [CWE-295], license: MIT}
+  - id: aivuln.deep.php.unserialize
+    languages: [php]
+    severity: WARNING
+    message: PHPオブジェクトの復元です。入力の信頼性と許可クラスを確認してください。
+    pattern: unserialize(...)
+    metadata: {category: security, technology: [php], cwe: [CWE-502], license: MIT}
+  - id: aivuln.deep.php.shell-exec
+    languages: [php]
+    severity: WARNING
+    message: シェルでコマンドを実行します。外部入力の到達を確認してください。
+    pattern: shell_exec(...)
+    metadata: {category: security, technology: [php], cwe: [CWE-78], license: MIT}
+  - id: aivuln.deep.php.sql-concatenation
+    languages: [php]
+    severity: WARNING
+    message: SQLへ文字列を連結しています。プリペアドステートメントへ置き換えられるか確認してください。
+    pattern: mysqli_query($DB, $SQL . $VALUE)
+    metadata: {category: security, technology: [php], cwe: [CWE-89], license: MIT}
+  - id: aivuln.deep.php.curl-tls-no-verify
+    languages: [php]
+    severity: WARNING
+    message: cURLのTLS証明書検証を無効にしています。接続先の証明書検証を確認してください。
+    pattern: curl_setopt($HANDLE, CURLOPT_SSL_VERIFYPEER, false)
+    metadata: {category: security, technology: [php], cwe: [CWE-295], license: MIT}

@@ -1,0 +1,25 @@
+# 顧客のサーバーを SSH で検査する設定の見本。案件ごとに写して、顧客のフォルダ(data/<顧客名>/)に置く。
+#
+# 前提:
+#   - 顧客から書面で検査の許可を得ている
+#   - 検査用のアカウントと SSH の鍵を用意してもらう(fast は root 不要)
+#   - 初めてのサーバーは先に ssh で一度つなぎ、known_hosts に登録しておく
+#
+# 実行: bin/kit vuls --config <このファイル> --client <顧客名> --authorized
+# 鍵のパスなどの相対指定は、このファイルのフォルダから見た位置になる。
+
+[default]
+port = "22"
+user = "vuls"                                  # 検査用のアカウント
+keyPath = "/Users/you/.ssh/id_ed25519_client"  # 検査用の鍵(顧客ごとに分ける)
+scanMode = ["fast"]                            # root 不要。詳しく見るなら "fast-root"(sudo が要る)
+
+[servers]
+
+[servers.web01]
+host = "192.0.2.10"                            # 例(文書用のアドレス)
+
+# 踏み台を通す場合
+# [servers.app01]
+# host = "10.0.1.20"
+# jumpServer = ["vuls@bastion.example.com:22"]

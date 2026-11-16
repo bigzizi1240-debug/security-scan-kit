@@ -1,0 +1,5 @@
+#!/bin/zsh
+# security-scan-kit のコマンド。lib/kit.py を Python 3.11 以上で動かす(Python は uv が選ぶ)。
+uv="$HOME/.local/bin/uv"
+[[ -x "$uv" ]] || uv="$(command -v uv)" || { echo "uv が見つかりません(https://docs.astral.sh/uv/)" >&2; exit 1; }
+exec "$uv" run --quiet --no-project --python '>=3.11' "${0:A:h:h}/lib/kit.py" "$@"

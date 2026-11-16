@@ -1,0 +1,69 @@
+# security-scan-kit が DefectDojo の docker-compose.yml に重ねる設定。
+# docker-compose.yml は upstream 3.4.303 のまま置き(git blob b72b3722)、変更はすべてここで行う。
+#
+# 1. イメージは Docker Hub から digest で固定して取る。upstream の既定の
+#    registry.defectdojo.com は、取得のたびに IP などを記録する(docker-compose.yml の冒頭の注記)。
+# 2. 秘密鍵・DB のパスワード・管理者のパスワードを必須にする。upstream は未設定のとき
+#    固定の既定値を使うが、ここでは未設定なら起動しない。値は bin/kit がキーチェーンから渡す。
+# 3. 待ち受けは入口の gateway(127.0.0.1 の 1 ポート)だけにする(upstream は全インターフェースの
+#    8080 と 8443)。gateway は DefectDojo と、キットの画面(/kit/)を同じ場所で出す。
+#    DD_ALLOWED_HOSTS も 127.0.0.1 と localhost に絞る(DNS rebinding 対策)。
+# 4. build を外す。このキットはイメージを取るだけで、ビルドはしない。
+# 5. 画面の宣伝文の取得を止める(DD_OS_MESSAGE_ENABLED。既定では 1 時間ごとに
+#    storage.googleapis.com の DefectDojo 社のバケットへ取りに行く)。
+
+x-secrets: &secrets
+  DD_SECRET_KEY: "${DD_SECRET_KEY:?bin/kit up で起動してください}"
+  DD_CREDENTIAL_AES_256_KEY: "${DD_CREDENTIAL_AES_256_KEY:?bin/kit up で起動してください}"
+  DD_DATABASE_URL: "postgresql://defectdojo:${DD_DATABASE_PASSWORD:?bin/kit up で起動してください}@postgres:5432/defectdojo"
+
+x-django-image: &django-image "docker.io/defectdojo/defectdojo-django:3.4.303@sha256:5cd572fe6d7ae59dc7edeb7e5a75ade3cf844c0f53615d6deae07ed1aac49e4d"
+
+services:
+  nginx:
+    image: "docker.io/defectdojo/defectdojo-nginx:3.4.303@sha256:4f7b5730a0d4df4c717cdc38aa40771e449789334585778419f7ce519cb65777"
+    build: !reset null
+    ports: !reset []
+  gateway:
+    image: "docker.io/library/nginx:1.30.6-alpine@sha256:0e52bd054126cdc040b1276c0af347aeb02a41b9cfe305d6094767ac30e97949"
+    depends_on:
+      nginx:
+        condition: service_started
+    environment:
+      KIT_GATEWAY_TOKEN: "${KIT_GATEWAY_TOKEN:?bin/kit up で起動してください}"
+      KIT_WEB_PORT: "${KIT_WEB_PORT:-18081}"
+    volumes:
+      - type: bind
+        source: ./gateway
+        target: /etc/nginx/templates
+        read_only: true
+    ports:
+      - target: 8080
+        published: "${KIT_DD_PORT:-18080}"
+        host_ip: 127.0.0.1
+        protocol: tcp
+        mode: host
+  uwsgi:
+    image: *django-image
+    build: !reset null
+    environment:
+      <<: *secrets
+      DD_ALLOWED_HOSTS: "127.0.0.1,localhost"
+      DD_SITE_URL: "http://127.0.0.1:${KIT_DD_PORT:-18080}"
+      DD_OS_MESSAGE_ENABLED: "False"
+  celerybeat:
+    image: *django-image
+    environment: *secrets
+  celeryworker:
+    image: *django-image
+    environment:
+      <<: *secrets
+      DD_SITE_URL: "http://127.0.0.1:${KIT_DD_PORT:-18080}"
+  initializer:
+    image: *django-image
+    environment:
+      <<: *secrets
+      DD_ADMIN_PASSWORD: "${DD_ADMIN_PASSWORD:?bin/kit up で起動してください}"
+  postgres:
+    environment:
+      POSTGRES_PASSWORD: "${DD_DATABASE_PASSWORD:?bin/kit up で起動してください}"

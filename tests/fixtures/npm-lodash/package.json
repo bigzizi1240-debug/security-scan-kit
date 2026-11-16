@@ -1,0 +1,9 @@
+{
+  "name": "kit-fixture",
+  "version": "1.0.0",
+  "private": true,
+  "description": "動作確認用。既知の脆弱性がある lodash 4.17.20 を指定している(インストールはしない)",
+  "dependencies": {
+    "lodash": "4.17.20"
+  }
+}
